@@ -2,52 +2,59 @@ package service
 
 import (
 	"fmt"
-	utility "simulate_client/Utility"
+	// utility "simulate_client/Utility"
 
 	"github.com/sacOO7/gowebsocket"
 )
+ 
+var Socket gowebsocket.Socket;
 
-type Socket struct
-{
-  socket interface{}
-
-}
 func SocketConnect() {
-	socket := gowebsocket.New("wss://" + utility.ConfigServer.Ip + ":" + utility.ConfigServer.Port + "/")
-	socket.OnConnected = func(socket gowebsocket.Socket) {
+	Socket = gowebsocket.New("ws://127.0.0.1:8080/websocket")
+	Socket.ConnectionOptions = gowebsocket.ConnectionOptions {
+		UseSSL:true,
+        UseCompression:true,
+	 }
+	Socket.OnConnected = func(socket gowebsocket.Socket) {
 		fmt.Println("Connected to server")
 	}
-	// socket.ConnectionOptions = gowebsocket.ConnectionOptions {
-	//     UseSSL:true,
-	//     UseCompression:true,
-	//     Subprotocols: [] string{"chat","superchat"},
-	// }
-	socket.OnConnectError = func(err error, socket gowebsocket.Socket) {
+	Socket.OnConnectError = func(err error, socket gowebsocket.Socket) {
 		fmt.Println("Recieved connect error ", err)
 	}
-	socket.OnTextMessage = func(message string, socket gowebsocket.Socket) {
+	Socket.OnTextMessage = func(message string, socket gowebsocket.Socket) {
 		fmt.Println("Recieved message " + message)
 	}
 
-	socket.OnBinaryMessage = func(data []byte, socket gowebsocket.Socket) {
+	Socket.OnBinaryMessage = func(data []byte, socket gowebsocket.Socket) {
 		fmt.Println("Recieved binary data ", data)
 	}
 
-	socket.OnPingReceived = func(data string, socket gowebsocket.Socket) {
+	Socket.OnPingReceived = func(data string, socket gowebsocket.Socket) {
 		fmt.Println("Recieved ping " + data)
 	}
 
-	socket.OnPongReceived = func(data string, socket gowebsocket.Socket) {
+	Socket.OnPongReceived = func(data string, socket gowebsocket.Socket) {
 		fmt.Println("Recieved pong " + data)
 	}
 
-	socket.OnDisconnected = func(err error, socket gowebsocket.Socket) {
+	Socket.OnDisconnected = func(err error, socket gowebsocket.Socket) {
 		fmt.Println("Disconnected from server ")
 		return
 	}
-	socket.Connect()
+	//socket.Connect()
 }
-func(se *Socket)SocketSend(){
-
-
+func SocketSendText(req string){
+	Socket.SendText(req)
 }
+func SocketSendBinary(req []byte){
+	Socket.SendBinary(req)
+}
+/*
+   //Send text message
+   socket.SendText("Hi there, this is my sample test message")
+
+   //Send binary data
+   token := make([]byte, 4)
+   // rand.Read(token) putting some random value in token
+   socket.SendBinary(token)
+*/
